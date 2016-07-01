@@ -75,8 +75,18 @@ public class MainActivity extends AppCompatActivity {
         recorder.getBuffer(rawBuffer);
 
         try {
-            File file = new File(FILE_DIR, "example.wav");
-            DataOutputStream outputStream = new DataOutputStream(new FileOutputStream(file));
+            File file;
+            DataOutputStream outputStream;
+
+            /* save raw audio data (pcm) */
+            file = new File(FILE_DIR, "example.pcm");
+            outputStream = new DataOutputStream(new FileOutputStream(file));
+            outputStream.write(rawBuffer.array(), 0, rawBuffer.position());
+            outputStream.close();
+
+            /* save wave file (wave header + pcm) */
+            file = new File(FILE_DIR, "example.wav");
+            outputStream = new DataOutputStream(new FileOutputStream(file));
             WaveHeaderWriter.rawToWave(1, recorder.getCurrentRate(), 16, rawBuffer, outputStream);
             outputStream.close();
         } catch (IOException e) {
