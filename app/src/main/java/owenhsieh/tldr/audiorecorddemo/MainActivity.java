@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
                                 saveFile();
                             }
                             if (pushToTalkImg != null) {
-                                pushToTalkImg.setImageResource(R.drawable.ic_mic);
+                                pushToTalkImg.setImageResource(R.drawable.ic_mic_off);
                             }
                             return true;
                     }
