@@ -1,6 +1,10 @@
 package owenhsieh.tldr.audiorecorddemo;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,6 +18,7 @@ import java.nio.ByteBuffer;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final static int PERMISSIONS_REQUESTS = 1;
     private String FILE_DIR;
     private MiniRecorder recorder;
 
@@ -22,6 +27,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        checkPermissions();
+    }
+
+    private void checkPermissions() {
+        int permissionCheck;
+        permissionCheck = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.RECORD_AUDIO);
+        if (permissionCheck == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, PERMISSIONS_REQUESTS);
+            return;
+        }
+
+        permissionCheck = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (permissionCheck == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSIONS_REQUESTS);
+            return;
+        }
+
+        setup();
+    }
+
+    private void setup() {
         FILE_DIR = getExternalCacheDir().getPath();
         File file = new File(FILE_DIR);
         if (!file.exists()) file.mkdir();
@@ -56,18 +82,36 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+        recorder.resume();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSIONS_REQUESTS) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                checkPermissions();
+            } else {
+                finish();
+            }
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        recorder.resume();
+        if (recorder != null)
+            recorder.resume();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        recorder.release();
+        if (recorder != null)
+            recorder.release();
     }
 
     private void saveFile() {
